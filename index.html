@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Nuestro Espacio 💕</title>
+
+    <style>
+        :root {
+            --color-principal: #ff4d6d;
+            --color-fondo: #fff0f3;
+            --color-texto: #2b2b2b;
+            --color-blanco: #ffffff;
+            --sombra: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; }
+
+        body { background-color: #e0e0e0; display: flex; justify-content: center; height: 100vh; }
+
+        #app-container {
+            width: 100%;
+            max-width: 400px;
+            background-color: var(--color-fondo);
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        }
+
+        header {
+            background-color: var(--color-principal);
+            color: var(--color-blanco);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            z-index: 10;
+            box-shadow: var(--sombra);
+        }
+
+        #btn-menu { font-size: 24px; cursor: pointer; background: none; border: none; color: white; }
+        #app-titulo { flex-grow: 1; text-align: center; font-size: 18px; font-weight: bold; margin-right: 24px; }
+
+        #menu-lateral {
+            position: absolute;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: var(--color-blanco);
+            z-index: 20;
+            transition: left 0.3s ease;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding-top: 60px;
+        }
+
+        #menu-lateral.abierto { left: 0; }
+
+        .item-menu {
+            padding: 18px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            color: var(--color-texto);
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #pantalla-oscura {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            z-index: 15;
+        }
+
+        .pantalla {
+            display: none;
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .pantalla.activa { display: flex; flex-direction: column; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #carrusel {
+            width: 100%;
+            height: 250px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--sombra);
+            margin-bottom: 20px;
+            background-color: var(--color-blanco);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #imagen-carrusel { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.5s ease; }
+
+        .contador-dias {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--color-principal);
+            margin-bottom: 20px;
+            background: var(--color-blanco);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: var(--sombra);
+        }
+
+        .caja-frase {
+            background-color: var(--color-blanco);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            font-style: italic;
+            color: var(--color-texto);
+            box-shadow: var(--sombra);
+            margin-bottom: 20px;
+        }
+
+        .btn-suave {
+            background-color: var(--color-principal);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* --- ESTILOS DEL CHAT CON NOMBRES --- */
+        #contenedor-mensajes {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .mensaje {
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+            font-size: 15px;
+            position: relative;
+        }
+
+        .mensaje::after {
+            content: attr(data-autor);
+            font-size: 10px;
+            position: absolute;
+            bottom: -15px;
+            color: #888;
+        }
+
+        .mensaje.Max {
+            background-color: var(--color-principal);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .mensaje.Max::after { right: 5px; }
+
+        .mensaje.Andi {
+            background-color: var(--color-blanco);
+            color: var(--color-texto);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .mensaje.Andi::after { left: 5px; }
+
+        .caja-input { display: flex; gap: 10px; }
+        .caja-input input {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 25px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+            outline: none;
+        }
+
+        .caja-input button {
+            background-color: var(--color-principal);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .item-plan {
+            background: var(--color-blanco);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            gap: 10px;
+        }
+
+        .item-plan.completado span { text-decoration: line-through; color: #999; }
+        .item-plan span { flex-grow: 1; }
+
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <header>
+        <button id="btn-menu">☰</button>
+        <div id="app-titulo">Inicio</div>
+    </header>
+
+    <div id="pantalla-oscura"></div>
+    <div id="menu-lateral">
+        <div class="item-menu" onclick="cambiarPantalla('inicio', 'Inicio')">🏠 Inicio</div>
+        <div class="item-menu" onclick="cambiarPantalla('chat', 'Chat Privado')">💬 Chat</div>
+        <div class="item-menu" onclick="cambiarPantalla('planes', 'Nuestros Planes')">✨ Planes</div>
+        <div class="item-menu" onclick="cambiarPantalla('trivia', 'Juego de Trivia')">🎮 Trivia</div>
+        <div class="item-menu" onclick="cambiarPantalla('fotos', 'Galería')">📸 Fotos</div>
+    </div>
+
+    <div id="pantalla-inicio" class="pantalla activa">
+        <div id="carrusel">
+            <img id="imagen-carrusel" src="" alt="Cargando...">
+        </div>
+        <div class="contador-dias" id="texto-contador">Calculando... 💕</div>
+        <div class="caja-frase">
+            <p id="texto-frase">"..."</p>
+            <button class="btn-suave" id="btn-cambiar-frase">Otra frase</button>
+        </div>
+    </div>
+
+    <div id="pantalla-chat" class="pantalla">
+        <div id="contenedor-mensajes"></div>
+        <div class="caja-input">
+            <select id="selector-autor" style="border-radius: 15px; border: none; padding: 0 5px; font-weight: bold;">
+                <option value="Max">Max</option>
+                <option value="Andi">Andi</option>
+            </select>
+            <input type="text" id="input-mensaje" placeholder="Mensaje...">
+            <button id="btn-enviar-mensaje">➤</button>
+        </div>
+    </div>
+
+    <div id="pantalla-planes" class="pantalla">
+        <div id="lista-planes" style="flex-grow: 1; overflow-y: auto;"></div>
+        <div class="caja-input" style="margin-top: 10px;">
+            <input type="text" id="input-plan" placeholder="Nuevo plan...">
+            <button id="btn-agregar-plan">+</button>
+        </div>
+    </div>
+
+    <div id="pantalla-trivia" class="pantalla">
+        <div class="caja-frase" style="margin-top: 20px;">
+            <h3 id="pregunta-trivia" style="margin-bottom: 15px;">Cargando...</h3>
+            <div id="opciones-trivia" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            <p id="resultado-trivia" style="margin-top: 15px; font-weight: bold;"></p>
+        </div>
+        <button class="btn-suave" id="btn-siguiente-pregunta" style="display:none; margin: 0 auto;">Siguiente</button>
+    </div>
+
+    <div id="pantalla-fotos" class="pantalla">
+        <div class="caja-input" style="margin-bottom: 20px;">
+            <input type="file" id="input-foto" accept="image/*" style="padding: 10px; background: white;">
+            <button id="btn-agregar-foto">+</button>
+        </div>
+        <div id="lista-fotos" style="display: flex; flex-direction: column; gap: 10px; overflow-y: auto;"></div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getDatabase, ref, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
+
+    // 🚀 TU CONFIGURACIÓN DE FIREBASE 🚀
+    const firebaseConfig = {
+        apiKey: "AIzaSyAgavsWY499m9ziVEUdr734MqLd5x9uKYo",
+        authDomain: "anma-39124.firebaseapp.com",
+        databaseURL: "https://anma-39124-default-rtdb.firebaseio.com",
+        projectId: "anma-39124",
+        storageBucket: "anma-39124.firebasestorage.app",
+        messagingSenderId: "276778113021",
+        appId: "1:276778113021:web:08cf658776073536822b94",
+        measurementId: "G-XH5P3X1L0J"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const storage = getStorage(app);
+
+    // --- NAVEGACIÓN ---
+    const menuLateral = document.getElementById('menu-lateral');
+    const pantallaOscura = document.getElementById('pantalla-oscura');
+    const btnMenu = document.getElementById('btn-menu');
+    const appTitulo = document.getElementById('app-titulo');
+
+    btnMenu.addEventListener('click', () => { menuLateral.classList.add('abierto'); pantallaOscura.style.display = 'block'; });
+    pantallaOscura.addEventListener('click', () => { menuLateral.classList.remove('abierto'); pantallaOscura.style.display = 'none'; });
+
+    window.cambiarPantalla = function(id, tit) {
+        document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+        document.getElementById('pantalla-' + id).classList.add('activa');
+        appTitulo.innerText = tit;
+        menuLateral.classList.remove('abierto');
+        pantallaOscura.style.display = 'none';
+    };
+
+    // --- INICIO ---
+    onValue(ref(db, 'fecha_inicio'), (s) => {
+        const fi = s.val();
+        if (fi) {
+            const dif = new Date().getTime() - new Date(fi).getTime();
+            document.getElementById('texto-contador').innerText = `Llevamos ${Math.floor(dif / 86400000)} días juntos 💕`;
+        }
+    });
+
+    let frs = [];
+    onValue(ref(db, 'frases'), (s) => { if (s.val()) { frs = Object.values(s.val()); mostrarF(); } });
+    const mostrarF = () => { if (frs.length) document.getElementById('texto-frase').innerText = `"${frs[Math.floor(Math.random() * frs.length)]}"`; };
+    document.getElementById('btn-cambiar-frase').addEventListener('click', mostrarF);
+
+    // --- FOTOS & CARRUSEL ---
+    let fts = [];
+    let idxF = 0;
+    onValue(ref(db, 'fotos'), (s) => {
+        const d = s.val();
+        const list = document.getElementById('lista-fotos');
+        list.innerHTML = '';
+        if (d) {
+            fts = Object.values(d);
+            Object.entries(d).forEach(([k, u]) => {
+                const div = document.createElement('div');
+                div.className = 'item-plan';
+                div.innerHTML = `<img src="${u}" style="width:40px;height:40px;border-radius:5px;object-fit:cover;"><span style="flex-grow:1;font-size:12px;">Foto</span><button style="color:red;border:none;background:none;cursor:pointer;">X</button>`;
+                div.querySelector('button').onclick = () => remove(ref(db, 'fotos/' + k));
+                list.appendChild(div);
+            });
+            if (fts.length) document.getElementById('imagen-carrusel').src = fts[0];
+        }
+    });
+
+    setInterval(() => { if (fts.length > 1) { idxF = (idxF + 1) % fts.length; const img = document.getElementById('imagen-carrusel'); img.style.opacity = 0; setTimeout(() => { img.src = fts[idxF]; img.style.opacity = 1; }, 500); } }, 4000);
+
+    document.getElementById('btn-agregar-foto').onclick = async () => {
+        const inp = document.getElementById('input-foto');
+        const file = inp.files[0];
+        if (file) {
+            const btn = document.getElementById('btn-agregar-foto');
+            btn.innerText = '⏳'; btn.disabled = true;
+            try {
+                const r = storageRef(storage, 'fotos/' + Date.now() + '_' + file.name);
+                await uploadBytes(r, file);
+                const url = await getDownloadURL(r);
+                push(ref(db, 'fotos'), url);
+                inp.value = ''; btn.innerText = '+'; btn.disabled = false;
+            } catch (e) { alert("Error"); btn.innerText = '+'; btn.disabled = false; }
+        }
+    };
+
+    // --- CHAT CON MAX Y ANDI ---
+    const refM = ref(db, 'mensajes');
+    onValue(refM, (s) => {
+        const contenedor = document.getElementById('contenedor-mensajes');
+        contenedor.innerHTML = '';
+        if (s.val()) {
+            Object.values(s.val()).forEach(m => {
+                const div = document.createElement('div');
+                div.className = `mensaje ${m.autor}`;
+                div.setAttribute('data-autor', m.autor);
+                div.innerText = m.texto;
+                contenedor.appendChild(div);
+            });
+            contenedor.scrollTop = contenedor.scrollHeight;
+        }
+    });
+
+    const enviar = () => {
+        const inp = document.getElementById('input-mensaje');
+        const aut = document.getElementById('selector-autor').value;
+        if (inp.value.trim()) {
+            push(refM, { texto: inp.value.trim(), autor: aut, timestamp: Date.now() });
+            inp.value = '';
+        }
+    };
+    document.getElementById('btn-enviar-mensaje').onclick = enviar;
+    document.getElementById('input-mensaje').onkeypress = (e) => { if(e.key==='Enter') enviar(); };
+
+    // --- PLANES ---
+    const refP = ref(db, 'planes');
+    onValue(refP, (s) => {
+        const list = document.getElementById('lista-planes');
+        list.innerHTML = '';
+        if (s.val()) {
+            Object.entries(s.val()).forEach(([k, p]) => {
+                const div = document.createElement('div');
+                div.className = `item-plan ${p.completado ? 'completado' : ''}`;
+                div.innerHTML = `<input type="checkbox" ${p.completado ? 'checked' : ''}><span>${p.texto}</span><button>🗑</button>`;
+                div.querySelector('input').onchange = (e) => update(ref(db, 'planes/' + k), { completado: e.target.checked });
+                div.querySelector('button').onclick = () => remove(ref(db, 'planes/' + k));
+                list.appendChild(div);
+            });
+        }
+    });
+    document.getElementById('btn-agregar-plan').onclick = () => {
+        const inp = document.getElementById('input-plan');
+        if (inp.value.trim()) { push(refP, { texto: inp.value.trim(), completado: false }); inp.value = ''; }
+    };
+
+    // --- TRIVIA ---
+    let triv = [];
+    let curT = 0;
+    onValue(ref(db, 'trivia'), (s) => { if (s.val()) { triv = Object.values(s.val()); showT(); } });
+    const showT = () => {
+        const optC = document.getElementById('opciones-trivia');
+        const resT = document.getElementById('resultado-trivia');
+        const btnS = document.getElementById('btn-siguiente-pregunta');
+        optC.innerHTML = ''; resT.innerText = ''; btnS.style.display = 'none';
+        if (triv.length && curT < triv.length) {
+            const q = triv[curT];
+            document.getElementById('pregunta-trivia').innerText = q.pregunta;
+            q.opciones.forEach((o, i) => {
+                const b = document.createElement('button');
+                b.className = 'btn-suave'; b.style.background = '#fff'; b.style.color = '#333'; b.innerText = o;
+                b.onclick = () => {
+                    Array.from(optC.children).forEach(x => x.disabled = true);
+                    if (i === q.correcta) { b.style.background = '#4cd137'; resT.innerText = '¡Correcto! 🥰'; }
+                    else { b.style.background = '#e84118'; resT.innerText = 'Ups 😅'; }
+                    btnS.style.display = 'block';
+                };
+                optC.appendChild(b);
+            });
+        } else { document.getElementById('pregunta-trivia').innerText = "¡Fin de la trivia! 🎉"; }
+    };
+    document.getElementById('btn-siguiente-pregunta').onclick = () => { curT++; showT(); };
+
+</script>
+</body>
+</html>
